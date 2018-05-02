@@ -11,7 +11,7 @@
 > import Data.List (findIndices)
 >
 > import System.Directory
->
+> import System.Info
 >
 > main = defaultMainWithHooks simpleUserHooks {
 >   hookedPrograms = [],
@@ -26,10 +26,36 @@
 >     }
 > }
 >
-> -- gslconfigProgram = (simpleProgram "gsl-config")
+> gslBuildInfo = case os of
+>     "windows" -> gslBuildInfoWindows
+>     "linux" -> gslBuildInfoLinux
+>     _ -> gslBuildInfoLinux
+> gslconfigProgram = (simpleProgram "gsl-config")
 >
-> gslBuildInfo :: LocalBuildInfo -> IO BuildInfo
-> gslBuildInfo lbi = do
+> gslBuildInfoLinux :: LocalBuildInfo -> IO BuildInfo
+> gslBuildInfoLinux lbi = do
+>   (gslconfigProg, _) <- requireProgram verbosity
+>                          gslconfigProgram (withPrograms lbi)
+>   let gslconfig = rawSystemProgramStdout verbosity gslconfigProg
+>
+>   cflags <- words `fmap` gslconfig ["--cflags"]
+>   libs <- words `fmap` gslconfig ["--libs"]
+>
+>   return emptyBuildInfo {
+>       frameworks    =  [ libs !! (i+1)
+>                        | i <- findIndices (== "-framework") libs
+>                        , i + 1 < length libs ]
+>     , extraLibs     = flag "-l" libs
+>     , extraLibDirs  = flag "-L" libs
+>     , includeDirs   = flag "-I" cflags
+>   }
+>   where
+>     verbosity = normal -- honestly, this is a hack
+>     flag f ws =
+>       let l = length f in [ drop l w | w <- ws, take l w == f ]
+>
+> gslBuildInfoWindows :: LocalBuildInfo -> IO BuildInfo
+> gslBuildInfoWindows lbi = do
 >   libPath <- canonicalizePath "../gsl/installdir/lib"
 >   includePath <- canonicalizePath "../gsl/installdir/include"
 >   let cflags = words $ "-I" ++ includePath
