@@ -3,38 +3,38 @@
 > import Distribution.Simple
 > import Distribution.PackageDescription
 > import Distribution.Version
-> 
+>
 > import Distribution.Simple.LocalBuildInfo
 > import Distribution.Simple.Program
 > import Distribution.Verbosity
-> 
+>
 > import Data.List (findIndices)
-> 
-> 
+>
+> import System.Directory
+>
+>
 > main = defaultMainWithHooks simpleUserHooks {
->   hookedPrograms = [gslconfigProgram],
-> 
+>   hookedPrograms = [],
+>
 >   confHook = \pkg flags -> do
 >     lbi <- confHook simpleUserHooks pkg flags
 >     bi <- gslBuildInfo lbi
->     
+>
 >     return lbi {
 >       localPkgDescr = updatePackageDescription
 >                         (Just bi, []) (localPkgDescr lbi)
->     } 
+>     }
 > }
-> 
-> gslconfigProgram = (simpleProgram "gsl-config")
-> 
+>
+> -- gslconfigProgram = (simpleProgram "gsl-config")
+>
 > gslBuildInfo :: LocalBuildInfo -> IO BuildInfo
 > gslBuildInfo lbi = do
->   (gslconfigProg, _) <- requireProgram verbosity
->                          gslconfigProgram (withPrograms lbi)
->   let gslconfig = rawSystemProgramStdout verbosity gslconfigProg
-> 
->   cflags <- words `fmap` gslconfig ["--cflags"]
->   libs <- words `fmap` gslconfig ["--libs"]
-> 
+>   libPath <- canonicalizePath "../gsl/installdir/lib"
+>   includePath <- canonicalizePath "../gsl/installdir/include"
+>   let cflags = words $ "-I" ++ includePath
+>       libs = words $ "-L" ++ libPath ++ " -lgsl -lgslcblas -lm"
+>
 >   return emptyBuildInfo {
 >       frameworks    =  [ libs !! (i+1)
 >                        | i <- findIndices (== "-framework") libs
@@ -45,7 +45,7 @@
 >   }
 >   where
 >     verbosity = normal -- honestly, this is a hack
->     flag f ws = 
+>     flag f ws =
 >       let l = length f in [ drop l w | w <- ws, take l w == f ]
->     
-> 
+>
+>
