@@ -14,7 +14,7 @@
 > import System.Info
 >
 > main = defaultMainWithHooks simpleUserHooks {
->   hookedPrograms = [],
+>   hookedPrograms = [gslconfigProgram],
 >
 >   confHook = \pkg flags -> do
 >     lbi <- confHook simpleUserHooks pkg flags
@@ -27,7 +27,7 @@
 > }
 >
 > gslBuildInfo = case os of
->     "windows" -> gslBuildInfoWindows
+>     "mingw32" -> gslBuildInfoWindows
 >     "linux" -> gslBuildInfoLinux
 >     _ -> gslBuildInfoLinux
 > gslconfigProgram = (simpleProgram "gsl-config")
