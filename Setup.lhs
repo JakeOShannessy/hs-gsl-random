@@ -56,8 +56,8 @@
 >
 > gslBuildInfoWindows :: LocalBuildInfo -> IO BuildInfo
 > gslBuildInfoWindows lbi = do
->   libPath <- pure "${pkgroot}\\gsl\\installdir\\lib"
->   includePath <- pure "${pkgroot}\\gsl\\installdir\\include"
+>   libPath <- pure "${pkgroot}\\..\\..\\..\\gsl\\installdir\\lib"
+>   includePath <- pure "${pkgroot}\\..\\..\\..\\gsl\\installdir\\include"
 >   let cflags = words $ "-I" ++ includePath
 >       libs = words $ "-L" ++ libPath ++ " -lgsl -lgslcblas -lm"
 >
