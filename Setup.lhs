@@ -56,10 +56,10 @@
 >
 > gslBuildInfoWindows :: LocalBuildInfo -> IO BuildInfo
 > gslBuildInfoWindows lbi = do
->   libPath <- canonicalizePath "../../../gsl/installdir/lib"
->   includePath <- canonicalizePath "../../../gsl/installdir/include"
->   let cflags = words $ "-I\"" ++ includePath ++ "\""
->       libs = words $ "-L\"" ++ libPath ++ "\" -lgsl -lgslcblas -lm"
+>   libPath <- pure "${pkgroot}\\gsl\\installdir\\lib"
+>   includePath <- pure "${pkgroot}\\gsl\\installdir\\include"
+>   let cflags = words $ "-I" ++ includePath
+>       libs = words $ "-L" ++ libPath ++ " -lgsl -lgslcblas -lm"
 >
 >   return emptyBuildInfo {
 >       frameworks    =  [ libs !! (i+1)
